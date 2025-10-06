@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Тест: Какая профессия вам подходит?</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background: linear-gradient(135deg, #3d4e5c 0%, #5a6c7d 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        overflow-x: hidden;
+        position: relative;
+      }
+
+      .particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .container {
+        max-width: 900px;
+        width: 100%;
+        position: relative;
+        z-index: 2;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 24px;
+        padding: 48px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+      }
+
+      h1 {
+        font-size: 42px;
+        font-weight: 700;
+        color: #1d1d1f;
+        margin-bottom: 12px;
+        text-align: center;
+      }
+
+      .subtitle {
+        font-size: 18px;
+        color: #6e6e73;
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .points-display {
+        text-align: center;
+        font-size: 24px;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 32px;
+        padding: 16px;
+        background: #f7fafc;
+        border-radius: 16px;
+        border: 2px solid #e2e8f0;
+      }
+
+      .points-remaining {
+        font-size: 48px;
+        font-weight: 700;
+        display: block;
+        margin-top: 8px;
+        color: #2d3748;
+      }
+
+      .qualities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        gap: 20px;
+        margin-bottom: 32px;
+      }
+
+      .quality-item {
+        background: #f7fafc;
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.3s ease;
+        border: 2px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .quality-item:hover {
+        background: #edf2f7;
+        transform: translateY(-2px);
+        border-color: #cbd5e0;
+      }
+
+      .quality-item.has-points {
+        border-color: #4a5568;
+        background: linear-gradient(
+          135deg,
+          rgba(74, 85, 104, 0.1) 0%,
+          rgba(45, 55, 72, 0.1) 100%
+        );
+      }
+
+      .quality-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1d1d1f;
+        flex: 1;
+      }
+
+      .quality-controls {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .control-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: #4a5568;
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .control-btn:hover {
+        background: #2d3748;
+        transform: scale(1.1);
+      }
+
+      .control-btn:active {
+        transform: scale(0.95);
+      }
+
+      .control-btn:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+        transform: scale(1);
+      }
+
+      .quality-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2d3748;
+        min-width: 40px;
+        text-align: center;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 18px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 16px rgba(74, 85, 104, 0.4);
+      }
+
+      .submit-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(74, 85, 104, 0.5);
+      }
+
+      .submit-btn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .submit-btn:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
+      .progress-container {
+        display: none;
+        text-align: center;
+        padding: 60px 0;
+      }
+
+      .progress-text {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1d1d1f;
+        margin-bottom: 24px;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4a5568 0%, #2d3748 100%);
+        width: 0%;
+        transition: width 0.3s ease;
+      }
+
+      .spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid #e2e8f0;
+        border-top-color: #4a5568;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .results-container {
+        display: none;
+      }
+
+      .results-title {
+        font-size: 36px;
+        font-weight: 700;
+        color: #1d1d1f;
+        text-align: center;
+        margin-bottom: 8px;
+      }
+
+      .results-subtitle {
+        font-size: 18px;
+        color: #6e6e73;
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .profession-card {
+        background: #f7fafc;
+        border-radius: 16px;
+        padding: 28px;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid #e2e8f0;
+      }
+
+      .profession-rank {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(74, 85, 104, 0.3);
+      }
+
+      .profession-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 16px;
+      }
+
+      .profession-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        box-shadow: 0 4px 12px rgba(74, 85, 104, 0.3);
+        flex-shrink: 0;
+      }
+
+      .profession-info {
+        flex: 1;
+      }
+
+      .profession-name {
+        font-size: 26px;
+        font-weight: 700;
+        color: #1d1d1f;
+        margin-bottom: 4px;
+      }
+
+      .profession-percentage {
+        font-size: 38px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .profession-qualities {
+        font-size: 14px;
+        color: #6e6e73;
+        line-height: 1.6;
+      }
+
+      .restart-btn {
+        width: 100%;
+        padding: 18px;
+        border-radius: 12px;
+        border: 2px solid #4a5568;
+        background: white;
+        color: #4a5568;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 24px;
+      }
+
+      .restart-btn:hover {
+        background: #4a5568;
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 2px solid #e2e8f0;
+      }
+
+      .footer a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #4a5568;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 10px 20px;
+        border-radius: 8px;
+      }
+
+      .footer a:hover {
+        background: #f7fafc;
+        color: #2d3748;
+        transform: translateY(-2px);
+      }
+
+      .footer .telegram-icon {
+        font-size: 20px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        .card {
+          padding: 32px 24px;
+        }
+
+        h1 {
+          font-size: 32px;
+        }
+
+        .qualities-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .quality-item {
+          min-width: auto;
+        }
+
+        .profession-icon {
+          width: 56px;
+          height: 56px;
+          font-size: 28px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+      <div class="card">
+        <!-- Quiz Section -->
+        <div id="quizSection">
+          <h1>Найди свою профессию</h1>
+          <p class="subtitle">Распределите 100 баллов между качествами</p>
+
+          <div class="points-display">
+            Осталось баллов
+            <span class="points-remaining" id="pointsRemaining">100</span>
+          </div>
+
+          <div class="qualities-grid" id="qualitiesGrid"></div>
+
+          <button class="submit-btn" id="submitBtn" disabled>
+            Узнать результат
+          </button>
+
+          <div class="footer">
+            <a href="https://t.me/sukkulink" target="_blank">
+              <span class="telegram-icon">✈️</span>
+              Забытый суккулент
+            </a>
+          </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-container" id="progressSection">
+          <p class="progress-text">Анализируем ваш профиль...</p>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="spinner"></div>
+
+          <div class="footer">
+            <a href="https://t.me/sukkulink" target="_blank">
+              <span class="telegram-icon">✈️</span>
+              Забытый суккулент
+            </a>
+          </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-container" id="resultsSection">
+          <h2 class="results-title">Ваши профессии</h2>
+          <p class="results-subtitle">Топ-3 варианта на основе ваших качеств</p>
+
+          <div id="resultsContent"></div>
+
+          <button class="restart-btn" id="restartBtn">Пройти заново</button>
+
+          <div class="footer">
+            <a href="https://t.me/sukkulink" target="_blank">
+              <span class="telegram-icon">✈️</span>
+              Забытый суккулент
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const qualities = [
+        { name: "Самомнение", id: "ego" },
+        { name: "Скудоумие", id: "stupidity" },
+        { name: "Хамство", id: "rudeness" },
+        { name: "Лень", id: "laziness" },
+        { name: "Жадность", id: "greed" },
+        { name: "Хитрость", id: "cunning" },
+        { name: "Болтливость", id: "talkativeness" },
+        { name: "Безответственность", id: "irresponsibility" },
+        { name: "Цинизм", id: "cynicism" },
+        { name: "Тщеславие", id: "vanity" },
+      ];
+
+      const professions = [
+        {
+          name: "Айтишник",
+          qualities: ["ego", "stupidity", "rudeness", "laziness"],
+          icon: "💻",
+        },
+        {
+          name: "Блогер",
+          qualities: ["ego", "stupidity", "vanity", "talkativeness"],
+          icon: "📹",
+        },
+        {
+          name: "Врач",
+          qualities: ["ego", "rudeness", "cynicism"],
+          icon: "⚕️",
+        },
+        {
+          name: "Бариста",
+          qualities: ["stupidity", "rudeness", "irresponsibility"],
+          icon: "☕",
+        },
+        {
+          name: "Политик",
+          qualities: ["ego", "cunning", "talkativeness", "cynicism"],
+          icon: "🏛️",
+        },
+        {
+          name: "Риелтор",
+          qualities: ["greed", "talkativeness", "cunning"],
+          icon: "🏠",
+        },
+        {
+          name: "Юрист",
+          qualities: ["ego", "cunning", "cynicism", "greed"],
+          icon: "⚖️",
+        },
+        {
+          name: "Менеджер",
+          qualities: ["ego", "talkativeness", "irresponsibility"],
+          icon: "💼",
+        },
+        {
+          name: "Копирайтер",
+          qualities: ["laziness", "vanity", "irresponsibility"],
+          icon: "✍️",
+        },
+        {
+          name: "Продюсер",
+          qualities: ["ego", "greed", "rudeness", "vanity"],
+          icon: "🎬",
+        },
+        {
+          name: "Тренер",
+          qualities: ["ego", "stupidity", "talkativeness"],
+          icon: "🏋️",
+        },
+        {
+          name: "Консультант",
+          qualities: ["ego", "talkativeness", "cunning", "greed"],
+          icon: "📊",
+        },
+        {
+          name: "Стартапер",
+          qualities: ["ego", "irresponsibility", "talkativeness", "greed"],
+          icon: "🚀",
+        },
+        {
+          name: "Маркетолог",
+          qualities: ["talkativeness", "cunning", "vanity"],
+          icon: "📢",
+        },
+        {
+          name: "HR-менеджер",
+          qualities: ["talkativeness", "cynicism", "irresponsibility"],
+          icon: "👥",
+        },
+        {
+          name: "Дизайнер",
+          qualities: ["ego", "vanity", "laziness"],
+          icon: "🎨",
+        },
+        {
+          name: "Фотограф",
+          qualities: ["ego", "vanity", "irresponsibility"],
+          icon: "📸",
+        },
+        {
+          name: "Журналист",
+          qualities: ["talkativeness", "cynicism", "cunning"],
+          icon: "📰",
+        },
+        {
+          name: "Актёр",
+          qualities: ["ego", "vanity", "talkativeness"],
+          icon: "🎭",
+        },
+        {
+          name: "Музыкант",
+          qualities: ["ego", "vanity", "laziness"],
+          icon: "🎸",
+        },
+        {
+          name: "Стилист",
+          qualities: ["vanity", "ego", "rudeness"],
+          icon: "✂️",
+        },
+        {
+          name: "Визажист",
+          qualities: ["vanity", "talkativeness", "greed"],
+          icon: "💄",
+        },
+        {
+          name: "Тату-мастер",
+          qualities: ["ego", "rudeness", "greed"],
+          icon: "🖊️",
+        },
+        {
+          name: "Барбер",
+          qualities: ["ego", "talkativeness", "vanity"],
+          icon: "💈",
+        },
+        {
+          name: "Официант",
+          qualities: ["rudeness", "stupidity", "irresponsibility"],
+          icon: "🍽️",
+        },
+        {
+          name: "Повар",
+          qualities: ["ego", "rudeness", "cynicism"],
+          icon: "👨‍🍳",
+        },
+        {
+          name: "Бармен",
+          qualities: ["talkativeness", "cynicism", "irresponsibility"],
+          icon: "🍸",
+        },
+        {
+          name: "Таксист",
+          qualities: ["rudeness", "talkativeness", "cynicism"],
+          icon: "🚕",
+        },
+        { name: "Банкир", qualities: ["greed", "cynicism", "ego"], icon: "🏦" },
+        {
+          name: "Бухгалтер",
+          qualities: ["greed", "cynicism", "laziness"],
+          icon: "🧮",
+        },
+        {
+          name: "Экономист",
+          qualities: ["greed", "cynicism", "stupidity"],
+          icon: "📈",
+        },
+        {
+          name: "Аналитик",
+          qualities: ["ego", "cynicism", "stupidity"],
+          icon: "📉",
+        },
+        {
+          name: "SMM-щик",
+          qualities: ["vanity", "stupidity", "talkativeness"],
+          icon: "📱",
+        },
+        {
+          name: "Инфлюенсер",
+          qualities: ["vanity", "ego", "stupidity"],
+          icon: "⭐",
+        },
+        {
+          name: "Стример",
+          qualities: ["talkativeness", "ego", "laziness"],
+          icon: "🎮",
+        },
+        {
+          name: "Геймер",
+          qualities: ["laziness", "irresponsibility", "rudeness"],
+          icon: "🕹️",
+        },
+        {
+          name: "Киберспортсмен",
+          qualities: ["ego", "rudeness", "irresponsibility"],
+          icon: "🏆",
+        },
+        {
+          name: "Коуч",
+          qualities: ["ego", "talkativeness", "greed"],
+          icon: "🎯",
+        },
+        {
+          name: "Психолог",
+          qualities: ["ego", "cynicism", "talkativeness"],
+          icon: "🧠",
+        },
+        {
+          name: "Астролог",
+          qualities: ["stupidity", "greed", "talkativeness"],
+          icon: "🌙",
+        },
+        {
+          name: "Нумеролог",
+          qualities: ["stupidity", "greed", "cunning"],
+          icon: "🔢",
+        },
+        {
+          name: "Таролог",
+          qualities: ["stupidity", "greed", "vanity"],
+          icon: "🃏",
+        },
+        {
+          name: "Экстрасенс",
+          qualities: ["stupidity", "greed", "cunning"],
+          icon: "🔮",
+        },
+        {
+          name: "Массажист",
+          qualities: ["laziness", "greed", "cynicism"],
+          icon: "💆",
+        },
+        {
+          name: "Косметолог",
+          qualities: ["greed", "vanity", "talkativeness"],
+          icon: "💅",
+        },
+        {
+          name: "Ветеринар",
+          qualities: ["cynicism", "rudeness", "greed"],
+          icon: "🐾",
+        },
+        {
+          name: "Учитель",
+          qualities: ["cynicism", "rudeness", "ego"],
+          icon: "📚",
+        },
+        {
+          name: "Преподаватель",
+          qualities: ["ego", "cynicism", "laziness"],
+          icon: "🎓",
+        },
+        {
+          name: "Репетитор",
+          qualities: ["greed", "ego", "talkativeness"],
+          icon: "📖",
+        },
+        {
+          name: "Охранник",
+          qualities: ["stupidity", "rudeness", "laziness"],
+          icon: "🛡️",
+        },
+        {
+          name: "Полицейский",
+          qualities: ["rudeness", "stupidity", "ego"],
+          icon: "👮",
+        },
+        {
+          name: "Военный",
+          qualities: ["stupidity", "rudeness", "ego"],
+          icon: "🪖",
+        },
+        {
+          name: "Пожарный",
+          qualities: ["stupidity", "ego", "irresponsibility"],
+          icon: "🚒",
+        },
+        {
+          name: "Курьер",
+          qualities: ["stupidity", "irresponsibility", "laziness"],
+          icon: "📦",
+        },
+        {
+          name: "Грузчик",
+          qualities: ["stupidity", "rudeness", "laziness"],
+          icon: "📦",
+        },
+        {
+          name: "Строитель",
+          qualities: ["stupidity", "laziness", "irresponsibility"],
+          icon: "👷",
+        },
+        {
+          name: "Сантехник",
+          qualities: ["rudeness", "greed", "laziness"],
+          icon: "🔧",
+        },
+        {
+          name: "Электрик",
+          qualities: ["stupidity", "greed", "irresponsibility"],
+          icon: "⚡",
+        },
+        {
+          name: "Механик",
+          qualities: ["rudeness", "greed", "cynicism"],
+          icon: "🔨",
+        },
+        {
+          name: "Слесарь",
+          qualities: ["stupidity", "rudeness", "laziness"],
+          icon: "⚙️",
+        },
+        {
+          name: "Сварщик",
+          qualities: ["stupidity", "rudeness", "irresponsibility"],
+          icon: "🔥",
+        },
+        {
+          name: "Программист",
+          qualities: ["ego", "laziness", "rudeness"],
+          icon: "⌨️",
+        },
+        {
+          name: "Тестировщик",
+          qualities: ["cynicism", "laziness", "rudeness"],
+          icon: "🐛",
+        },
+        {
+          name: "DevOps",
+          qualities: ["ego", "rudeness", "cynicism"],
+          icon: "🖥️",
+        },
+        {
+          name: "Дата-сайентист",
+          qualities: ["ego", "stupidity", "vanity"],
+          icon: "📊",
+        },
+        {
+          name: "ML-инженер",
+          qualities: ["ego", "vanity", "laziness"],
+          icon: "🤖",
+        },
+        {
+          name: "Архитектор ПО",
+          qualities: ["ego", "cynicism", "rudeness"],
+          icon: "🏗️",
+        },
+        {
+          name: "Тимлид",
+          qualities: ["ego", "rudeness", "irresponsibility"],
+          icon: "👨‍💼",
+        },
+        {
+          name: "Скрам-мастер",
+          qualities: ["talkativeness", "irresponsibility", "vanity"],
+          icon: "📋",
+        },
+        {
+          name: "Продакт-менеджер",
+          qualities: ["ego", "talkativeness", "irresponsibility"],
+          icon: "💡",
+        },
+        {
+          name: "UX-дизайнер",
+          qualities: ["ego", "vanity", "talkativeness"],
+          icon: "📱",
+        },
+        {
+          name: "UI-дизайнер",
+          qualities: ["vanity", "ego", "laziness"],
+          icon: "🖌️",
+        },
+        {
+          name: "Motion-дизайнер",
+          qualities: ["vanity", "laziness", "irresponsibility"],
+          icon: "🎞️",
+        },
+        {
+          name: "3D-художник",
+          qualities: ["ego", "vanity", "laziness"],
+          icon: "🎲",
+        },
+        {
+          name: "Иллюстратор",
+          qualities: ["vanity", "laziness", "irresponsibility"],
+          icon: "🖍️",
+        },
+        {
+          name: "Аниматор",
+          qualities: ["vanity", "laziness", "ego"],
+          icon: "🎥",
+        },
+        {
+          name: "Видеомонтажер",
+          qualities: ["laziness", "vanity", "irresponsibility"],
+          icon: "🎬",
+        },
+        {
+          name: "Звукорежиссёр",
+          qualities: ["ego", "cynicism", "laziness"],
+          icon: "🎧",
+        },
+        {
+          name: "Саунд-дизайнер",
+          qualities: ["ego", "vanity", "laziness"],
+          icon: "🔊",
+        },
+        {
+          name: "Композитор",
+          qualities: ["ego", "vanity", "irresponsibility"],
+          icon: "🎼",
+        },
+        {
+          name: "Продюсер игр",
+          qualities: ["ego", "greed", "irresponsibility"],
+          icon: "🎯",
+        },
+        {
+          name: "Геймдизайнер",
+          qualities: ["ego", "laziness", "stupidity"],
+          icon: "🎲",
+        },
+        {
+          name: "Левел-дизайнер",
+          qualities: ["laziness", "stupidity", "irresponsibility"],
+          icon: "🗺️",
+        },
+        {
+          name: "Нарративный дизайнер",
+          qualities: ["vanity", "ego", "laziness"],
+          icon: "📝",
+        },
+        {
+          name: "Сценарист",
+          qualities: ["ego", "vanity", "laziness"],
+          icon: "📜",
+        },
+        {
+          name: "Писатель",
+          qualities: ["ego", "vanity", "cynicism"],
+          icon: "✒️",
+        },
+        { name: "Поэт", qualities: ["ego", "vanity", "stupidity"], icon: "📿" },
+        {
+          name: "Переводчик",
+          qualities: ["cynicism", "laziness", "greed"],
+          icon: "🌐",
+        },
+        {
+          name: "Редактор",
+          qualities: ["cynicism", "rudeness", "ego"],
+          icon: "📝",
+        },
+        {
+          name: "Корректор",
+          qualities: ["cynicism", "rudeness", "vanity"],
+          icon: "🔍",
+        },
+        {
+          name: "Литературный агент",
+          qualities: ["cunning", "greed", "talkativeness"],
+          icon: "🤝",
+        },
+        {
+          name: "Издатель",
+          qualities: ["greed", "cynicism", "cunning"],
+          icon: "📚",
+        },
+        {
+          name: "Библиотекарь",
+          qualities: ["cynicism", "rudeness", "laziness"],
+          icon: "📚",
+        },
+        {
+          name: "Архивариус",
+          qualities: ["cynicism", "laziness", "stupidity"],
+          icon: "🗃️",
+        },
+        {
+          name: "Куратор",
+          qualities: ["ego", "cynicism", "vanity"],
+          icon: "🏛️",
+        },
+        {
+          name: "Искусствовед",
+          qualities: ["ego", "cynicism", "talkativeness"],
+          icon: "🖼️",
+        },
+      ];
+
+      let pointsData = {};
+      let totalPoints = 100;
+
+      function init() {
+        const grid = document.getElementById("qualitiesGrid");
+        grid.innerHTML = "";
+
+        pointsData = {};
+        totalPoints = 100;
+
+        qualities.forEach((quality) => {
+          pointsData[quality.id] = 0;
+
+          const item = document.createElement("div");
+          item.className = "quality-item";
+          item.innerHTML = `
+                    <span class="quality-name">${quality.name}</span>
+                    <div class="quality-controls">
+                        <button class="control-btn minus-btn" data-id="${quality.id}">−</button>
+                        <span class="quality-value" id="value-${quality.id}">0</span>
+                        <button class="control-btn plus-btn" data-id="${quality.id}">+</button>
+                    </div>
+                `;
+          grid.appendChild(item);
+        });
+
+        attachEventListeners();
+        updateUI();
+      }
+
+      function attachEventListeners() {
+        document.querySelectorAll(".plus-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const id = e.target.dataset.id;
+            if (totalPoints > 0) {
+              pointsData[id] += 5;
+              totalPoints -= 5;
+              updateUI();
+              animateButton(e.target);
+            }
+          });
+        });
+
+        document.querySelectorAll(".minus-btn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const id = e.target.dataset.id;
+            if (pointsData[id] > 0) {
+              pointsData[id] -= 5;
+              totalPoints += 5;
+              updateUI();
+              animateButton(e.target);
+            }
+          });
+        });
+
+        const submitBtn = document.getElementById("submitBtn");
+        const newSubmitBtn = submitBtn.cloneNode(true);
+        submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
+        newSubmitBtn.addEventListener("click", submitQuiz);
+
+        const restartBtn = document.getElementById("restartBtn");
+        if (restartBtn) {
+          const newRestartBtn = restartBtn.cloneNode(true);
+          restartBtn.parentNode.replaceChild(newRestartBtn, restartBtn);
+          newRestartBtn.addEventListener("click", restart);
+        }
+      }
+
+      function animateButton(btn) {
+        gsap.to(btn, {
+          scale: 1.2,
+          duration: 0.1,
+          yoyo: true,
+          repeat: 1,
+        });
+      }
+
+      function updateUI() {
+        document.getElementById("pointsRemaining").textContent = totalPoints;
+
+        qualities.forEach((quality) => {
+          const valueEl = document.getElementById(`value-${quality.id}`);
+          if (valueEl) {
+            valueEl.textContent = pointsData[quality.id];
+
+            const item = valueEl.closest(".quality-item");
+            if (pointsData[quality.id] > 0) {
+              item.classList.add("has-points");
+            } else {
+              item.classList.remove("has-points");
+            }
+
+            const minusBtn = item.querySelector(".minus-btn");
+            const plusBtn = item.querySelector(".plus-btn");
+
+            minusBtn.disabled = pointsData[quality.id] === 0;
+            plusBtn.disabled = totalPoints === 0;
+          }
+        });
+
+        const submitBtn = document.getElementById("submitBtn");
+        if (submitBtn) {
+          submitBtn.disabled = totalPoints !== 0;
+        }
+      }
+
+      function createParticles(item) {
+        const rect = item.getBoundingClientRect();
+        const particlesContainer = document.getElementById("particles");
+
+        for (let i = 0; i < 15; i++) {
+          const particle = document.createElement("div");
+          particle.className = "particle";
+          particle.style.left = rect.left + rect.width / 2 + "px";
+          particle.style.top = rect.top + rect.height / 2 + "px";
+          particlesContainer.appendChild(particle);
+
+          const angle = (Math.PI * 2 * i) / 15;
+          const distance = 100 + Math.random() * 100;
+          const x = Math.cos(angle) * distance;
+          const y = Math.sin(angle) * distance;
+
+          gsap.to(particle, {
+            x: x,
+            y: y,
+            opacity: 0,
+            scale: 0,
+            duration: 0.8,
+            ease: "power2.out",
+            onComplete: () => particle.remove(),
+          });
+        }
+      }
+
+      function submitQuiz() {
+        const quizSection = document.getElementById("quizSection");
+        const progressSection = document.getElementById("progressSection");
+        const qualityItems = document.querySelectorAll(".quality-item");
+
+        qualityItems.forEach((item, index) => {
+          const hasPoints = pointsData[qualities[index].id] > 0;
+
+          if (!hasPoints) {
+            createParticles(item);
+
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 1500 + Math.random() * 500;
+            const x = Math.cos(angle) * distance;
+            const y = Math.sin(angle) * distance;
+
+            gsap.to(item, {
+              x: x,
+              y: y,
+              rotation: Math.random() * 1080 - 540,
+              opacity: 0,
+              scale: 0.3,
+              duration: 1.2,
+              delay: index * 0.03,
+              ease: "power3.in",
+              filter: "blur(10px)",
+            });
+          } else {
+            gsap.to(item, {
+              scale: 0.8,
+              opacity: 0.3,
+              duration: 0.6,
+              delay: index * 0.03,
+            });
+          }
+        });
+
+        gsap.to(
+          [
+            ".points-display",
+            "#submitBtn",
+            "h1",
+            ".subtitle",
+            "#quizSection .footer",
+          ],
+          {
+            opacity: 0,
+            y: -30,
+            duration: 0.8,
+            delay: 0.6,
+            ease: "power2.in",
+          }
+        );
+
+        setTimeout(() => {
+          quizSection.style.display = "none";
+          progressSection.style.display = "block";
+
+          gsap.from(progressSection, {
+            opacity: 0,
+            scale: 0.9,
+            duration: 0.6,
+            ease: "back.out(1.7)",
+          });
+
+          animateProgress();
+        }, 2500);
+      }
+
+      function animateProgress() {
+        const progressFill = document.getElementById("progressFill");
+        let progress = 0;
+
+        const interval = setInterval(() => {
+          progress += Math.random() * 15 + 5;
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            setTimeout(showResults, 500);
+          }
+          progressFill.style.width = progress + "%";
+        }, 200);
+      }
+
+      function calculateResults() {
+        const results = professions.map((profession) => {
+          let score = 0;
+          let matchedQualities = [];
+
+          profession.qualities.forEach((qualityId) => {
+            const points = pointsData[qualityId] || 0;
+            if (points > 0) {
+              score += points * (0.8 + Math.random() * 0.4);
+              matchedQualities.push(
+                qualities.find((q) => q.id === qualityId).name
+              );
+            }
+          });
+
+          if (matchedQualities.length > 0) {
+            score += matchedQualities.length * 3;
+          }
+
+          return {
+            name: profession.name,
+            icon: profession.icon,
+            score: score,
+            percentage: score,
+            qualities: matchedQualities,
+          };
+        });
+
+        const validResults = results.filter((r) => r.score > 0);
+        validResults.sort((a, b) => b.score - a.score);
+
+        const topThree = validResults.slice(0, 3);
+        const total = topThree.reduce((sum, r) => sum + r.score, 0);
+
+        topThree.forEach((r) => {
+          r.percentage = total > 0 ? Math.round((r.score / total) * 100) : 0;
+        });
+
+        return topThree;
+      }
+
+      function showResults() {
+        const progressSection = document.getElementById("progressSection");
+        const resultsSection = document.getElementById("resultsSection");
+        const resultsContent = document.getElementById("resultsContent");
+
+        gsap.to(progressSection, {
+          opacity: 0,
+          scale: 0.9,
+          duration: 0.5,
+          onComplete: () => {
+            progressSection.style.display = "none";
+            resultsSection.style.display = "block";
+
+            const results = calculateResults();
+            resultsContent.innerHTML = "";
+
+            results.forEach((result, index) => {
+              const card = document.createElement("div");
+              card.className = "profession-card";
+              card.style.opacity = "0";
+              card.style.transform = "translateY(50px) scale(0.95)";
+
+              const emoji = ["🥇", "🥈", "🥉"][index];
+
+              card.innerHTML = `
+                            <div class="profession-rank">${emoji}</div>
+                            <div class="profession-header">
+                                <div class="profession-icon">${
+                                  result.icon
+                                }</div>
+                                <div class="profession-info">
+                                    <div class="profession-name">${
+                                      result.name
+                                    }</div>
+                                    <div class="profession-percentage">${
+                                      result.percentage
+                                    }%</div>
+                                </div>
+                            </div>
+                            <div class="profession-qualities">
+                                Ваши качества: ${result.qualities.join(", ")}
+                            </div>
+                        `;
+
+              resultsContent.appendChild(card);
+
+              gsap.to(card, {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                duration: 0.8,
+                delay: index * 0.25,
+                ease: "back.out(1.4)",
+              });
+            });
+
+            gsap.from(resultsSection, {
+              opacity: 0,
+              scale: 0.95,
+              duration: 0.6,
+            });
+          },
+        });
+      }
+
+      function restart() {
+        const resultsSection = document.getElementById("resultsSection");
+        const quizSection = document.getElementById("quizSection");
+
+        gsap.to(resultsSection, {
+          opacity: 0,
+          scale: 0.9,
+          duration: 0.5,
+          onComplete: () => {
+            resultsSection.style.display = "none";
+
+            init();
+
+            quizSection.style.display = "block";
+
+            gsap.set(
+              [
+                "h1",
+                ".subtitle",
+                ".points-display",
+                "#submitBtn",
+                "#quizSection .footer",
+              ],
+              {
+                opacity: 1,
+                y: 0,
+              }
+            );
+
+            gsap.from(quizSection, {
+              opacity: 0,
+              scale: 0.95,
+              duration: 0.6,
+              ease: "back.out(1.4)",
+            });
+          },
+        });
+      }
+
+      init();
+    </script>
+  </body>
+</html>
